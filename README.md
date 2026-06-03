@@ -56,7 +56,7 @@ Not yet automated. To ship a release manually:
 
 ```bash
 npm run build -w packages/graffiti
-npm pack -w packages/graffiti                 # produces graffiti-x.y.z.tgz
+npm pack -w packages/graffiti                 # produces gstranger-graffiti-x.y.z.tgz
 # smoke-test the tarball in a scratch project
 npm publish -w packages/graffiti              # when ready
 ```

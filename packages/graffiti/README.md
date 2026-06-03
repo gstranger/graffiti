@@ -1,4 +1,4 @@
-# graffiti
+# @gstranger/graffiti
 
 Telestrator-style React component for drawing on HTML5 video. Pause,
 draw, resume; the drawing replays in sync with playback the next time
@@ -7,7 +7,7 @@ you reach that moment in the timeline.
 ## Install
 
 ```bash
-npm i graffiti
+npm i @gstranger/graffiti
 ```
 
 `react` and `react-dom` (>=18 <20) are peer dependencies.
@@ -15,8 +15,8 @@ npm i graffiti
 ## Use
 
 ```tsx
-import { Graffiti, type Annotation } from 'graffiti';
-import 'graffiti/style.css';
+import { Graffiti, type Annotation } from '@gstranger/graffiti';
+import '@gstranger/graffiti/style.css';
 
 export function App() {
   return (
