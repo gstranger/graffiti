@@ -7,12 +7,21 @@ import type {
   Stroke,
   TextAnnotation,
   Tool,
+  ToolDescriptor,
 } from './types';
 import './Graffiti.css';
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
+
+const TOOLS: ToolDescriptor[] = [
+  { id: 'pen',    label: 'pen',    icon: '✏️' },
+  { id: 'marker', label: 'marker', icon: '🖍️' },
+  { id: 'arrow',  label: 'arrow',  icon: '➡️' },
+  { id: 'text',   label: 'text',   icon: 'T' },
+  { id: 'select', label: 'select', icon: '👆' },
+];
 
 export default function Graffiti({
   src,
@@ -70,8 +79,8 @@ export default function Graffiti({
       const canvas = canvasRef.current;
       if (!canvas) return { x: 0, y: 0 };
       const rect = canvas.getBoundingClientRect();
-      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+      const clientX = 'touches' in e ? e.touches[0]!.clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0]!.clientY : e.clientY;
       return {
         x: (clientX - rect.left) * (canvas.width / rect.width),
         y: (clientY - rect.top) * (canvas.height / rect.height),
@@ -90,9 +99,9 @@ export default function Graffiti({
     ) => {
       if (points.length < 2) return;
       ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
+      ctx.moveTo(points[0]!.x, points[0]!.y);
       for (let i = 1; i < points.length; i++) {
-        ctx.lineTo(points[i].x, points[i].y);
+        ctx.lineTo(points[i]!.x, points[i]!.y);
       }
       ctx.strokeStyle = color;
       ctx.lineWidth = width;
@@ -171,39 +180,47 @@ export default function Graffiti({
     (ctx: CanvasRenderingContext2D, anno: Annotation, elapsed: number) => {
       const animating = elapsed >= 0 && elapsed < anno.duration && anno.duration > 0;
 
-      if ('points' in anno) {
-        const stroke = anno as Stroke;
-        let points = stroke.points;
-        if (animating) {
-          const visible = points.filter((p) => p.t <= elapsed);
-          if (visible.length < 2) return;
-          points = visible;
+      switch (anno.type) {
+        case 'stroke': {
+          let points = anno.points;
+          if (animating) {
+            const visible = points.filter((p) => p.t <= elapsed);
+            if (visible.length < 2) return;
+            points = visible;
+          }
+          drawStroke(ctx, points, anno.color, anno.width, anno.tool);
+          return;
         }
-        drawStroke(ctx, points, stroke.color, stroke.width, stroke.tool);
-      } else if ('start' in anno) {
-        const arrow = anno as Arrow;
-        const { start } = arrow;
-        let { end } = arrow;
-        if (animating) {
-          const t = Math.max(0, Math.min(1, elapsed / anno.duration));
-          end = {
-            x: start.x + (arrow.end.x - start.x) * t,
-            y: start.y + (arrow.end.y - start.y) * t,
-          };
+        case 'arrow': {
+          const { start } = anno;
+          let { end } = anno;
+          if (animating) {
+            const t = Math.max(0, Math.min(1, elapsed / anno.duration));
+            end = {
+              x: start.x + (anno.end.x - start.x) * t,
+              y: start.y + (anno.end.y - start.y) * t,
+            };
+          }
+          drawArrow(ctx, start, end, anno.color, anno.width);
+          return;
         }
-        drawArrow(ctx, start, end, arrow.color, arrow.width);
-      } else if ('text' in anno) {
-        const textAnno = anno as TextAnnotation;
-        let text = textAnno.text;
-        let opacity = 1;
-        if (animating) {
-          const charDuration = textAnno.duration / textAnno.text.length;
-          const charsToShow = Math.max(0, Math.floor(elapsed / charDuration));
-          if (charsToShow <= 0) return;
-          text = textAnno.text.slice(0, charsToShow);
-          opacity = Math.min(1, elapsed / textAnno.duration);
+        case 'text': {
+          let text = anno.text;
+          let opacity = 1;
+          if (animating) {
+            const charDuration = anno.duration / anno.text.length;
+            const charsToShow = Math.max(0, Math.floor(elapsed / charDuration));
+            if (charsToShow <= 0) return;
+            text = anno.text.slice(0, charsToShow);
+            opacity = Math.min(1, elapsed / anno.duration);
+          }
+          drawText(ctx, text, anno.position, anno.color, anno.fontSize, opacity);
+          return;
         }
-        drawText(ctx, text, textAnno.position, textAnno.color, textAnno.fontSize, opacity);
+        default: {
+          const _exhaustive: never = anno;
+          return _exhaustive;
+        }
       }
     },
     [drawStroke, drawArrow, drawText]
@@ -340,6 +357,7 @@ export default function Graffiti({
       if (tool === 'arrow' && arrowStart && previewArrow) {
         const drawDuration = Date.now() - arrowStartRef.current;
         const arrow: Arrow = {
+          type: 'arrow',
           id: generateId(),
           start: arrowStart,
           end: previewArrow.end,
@@ -359,6 +377,7 @@ export default function Graffiti({
       if (currentStroke && currentStroke.length > 1) {
         const drawDuration = Date.now() - strokeStartRef.current;
         const stroke: Stroke = {
+          type: 'stroke',
           id: generateId(),
           points: currentStroke,
           color,
@@ -384,6 +403,7 @@ export default function Graffiti({
     }
     const drawDuration = Date.now() - textStartRef.current;
     const textAnno: TextAnnotation = {
+      type: 'text',
       id: generateId(),
       position: textInput,
       text: textValue.trim(),
@@ -466,7 +486,7 @@ export default function Graffiti({
       wasPlayingBeforeScrubRef.current = !video.paused;
       if (!video.paused) video.pause();
       setIsScrubbing(true);
-      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientX = 'touches' in e ? e.touches[0]!.clientX : e.clientX;
       const t = getTrackTime(clientX);
       video.currentTime = t;
       setCurrentTime(t);
@@ -480,7 +500,7 @@ export default function Graffiti({
     (e: React.MouseEvent | React.TouchEvent) => {
       if (!isScrubbing) return;
       e.preventDefault();
-      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientX = 'touches' in e ? e.touches[0]!.clientX : e.clientX;
       const t = getTrackTime(clientX);
       if (videoRef.current) videoRef.current.currentTime = t;
       setCurrentTime(t);
@@ -567,18 +587,14 @@ export default function Graffiti({
     <div className={`graffiti ${className}`} ref={containerRef} style={{ width, height }}>
       <div className="graffiti-toolbar">
         <div className="graffiti-tools">
-          {(['pen', 'marker', 'arrow', 'text', 'select'] as Tool[]).map((t) => (
+          {TOOLS.map((t) => (
             <button
-              key={t}
-              className={tool === t ? 'active' : ''}
-              onClick={() => setTool(t)}
-              title={t}
+              key={t.id}
+              className={tool === t.id ? 'active' : ''}
+              onClick={() => setTool(t.id)}
+              title={t.label}
             >
-              {t === 'pen' && '✏️'}
-              {t === 'marker' && '🖍️'}
-              {t === 'arrow' && '➡️'}
-              {t === 'text' && 'T'}
-              {t === 'select' && '👆'}
+              {t.icon}
             </button>
           ))}
         </div>

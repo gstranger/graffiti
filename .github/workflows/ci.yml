@@ -18,8 +18,16 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run lint
+      - run: npm run lint --workspaces --if-present
 
-      - run: npx tsc -b
+      - run: npm run typecheck
 
-      - run: npm run build
+      - run: npm run build -w packages/graffiti
+
+      - run: npm run build -w examples/demo
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: graffiti-dist
+          path: packages/graffiti/dist
+          retention-days: 7
