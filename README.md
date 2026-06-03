@@ -52,13 +52,22 @@ uploaded as an artifact for pre-publish smoke testing.
 
 ## Publishing the library
 
-Not yet automated. To ship a release manually:
+Automated via `.github/workflows/release.yml`. To ship a release:
+
+```bash
+# bump the version
+npm version patch -w packages/graffiti        # or minor / major
+git push && git push --tags                   # the tag push triggers publish
+```
+
+The workflow verifies the tag matches `package.json`, builds, and
+publishes `@jodiak/graffiti` to npm with provenance attestation.
+
+Local dry run before pushing a tag:
 
 ```bash
 npm run build -w packages/graffiti
-npm pack -w packages/graffiti                 # produces gstranger-graffiti-x.y.z.tgz
-# smoke-test the tarball in a scratch project
-npm publish -w packages/graffiti              # when ready
+npm pack -w packages/graffiti --dry-run
 ```
 
 ## Stack
