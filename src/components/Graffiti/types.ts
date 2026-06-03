@@ -6,6 +6,7 @@ export interface Point {
 }
 
 export interface Stroke {
+  type: 'stroke';
   id: string;
   points: (Point & { t: number })[];
   color: string;
@@ -16,6 +17,7 @@ export interface Stroke {
 }
 
 export interface Arrow {
+  type: 'arrow';
   id: string;
   start: Point;
   end: Point;
@@ -26,13 +28,14 @@ export interface Arrow {
 }
 
 export interface TextAnnotation {
+  type: 'text';
   id: string;
   position: Point;
   text: string;
   color: string;
   fontSize: number;
   timestamp: number;
-  duration: number; // fade-in duration
+  duration: number;
 }
 
 export type Annotation = Stroke | Arrow | TextAnnotation;

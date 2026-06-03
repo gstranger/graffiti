@@ -171,39 +171,43 @@ export default function Graffiti({
     (ctx: CanvasRenderingContext2D, anno: Annotation, elapsed: number) => {
       const animating = elapsed >= 0 && elapsed < anno.duration && anno.duration > 0;
 
-      if ('points' in anno) {
-        const stroke = anno as Stroke;
-        let points = stroke.points;
-        if (animating) {
-          const visible = points.filter((p) => p.t <= elapsed);
-          if (visible.length < 2) return;
-          points = visible;
+      switch (anno.type) {
+        case 'stroke': {
+          let points = anno.points;
+          if (animating) {
+            const visible = points.filter((p) => p.t <= elapsed);
+            if (visible.length < 2) return;
+            points = visible;
+          }
+          drawStroke(ctx, points, anno.color, anno.width, anno.tool);
+          return;
         }
-        drawStroke(ctx, points, stroke.color, stroke.width, stroke.tool);
-      } else if ('start' in anno) {
-        const arrow = anno as Arrow;
-        const { start } = arrow;
-        let { end } = arrow;
-        if (animating) {
-          const t = Math.max(0, Math.min(1, elapsed / anno.duration));
-          end = {
-            x: start.x + (arrow.end.x - start.x) * t,
-            y: start.y + (arrow.end.y - start.y) * t,
-          };
+        case 'arrow': {
+          const { start } = anno;
+          let { end } = anno;
+          if (animating) {
+            const t = Math.max(0, Math.min(1, elapsed / anno.duration));
+            end = {
+              x: start.x + (anno.end.x - start.x) * t,
+              y: start.y + (anno.end.y - start.y) * t,
+            };
+          }
+          drawArrow(ctx, start, end, anno.color, anno.width);
+          return;
         }
-        drawArrow(ctx, start, end, arrow.color, arrow.width);
-      } else if ('text' in anno) {
-        const textAnno = anno as TextAnnotation;
-        let text = textAnno.text;
-        let opacity = 1;
-        if (animating) {
-          const charDuration = textAnno.duration / textAnno.text.length;
-          const charsToShow = Math.max(0, Math.floor(elapsed / charDuration));
-          if (charsToShow <= 0) return;
-          text = textAnno.text.slice(0, charsToShow);
-          opacity = Math.min(1, elapsed / textAnno.duration);
+        case 'text': {
+          let text = anno.text;
+          let opacity = 1;
+          if (animating) {
+            const charDuration = anno.duration / anno.text.length;
+            const charsToShow = Math.max(0, Math.floor(elapsed / charDuration));
+            if (charsToShow <= 0) return;
+            text = anno.text.slice(0, charsToShow);
+            opacity = Math.min(1, elapsed / anno.duration);
+          }
+          drawText(ctx, text, anno.position, anno.color, anno.fontSize, opacity);
+          return;
         }
-        drawText(ctx, text, textAnno.position, textAnno.color, textAnno.fontSize, opacity);
       }
     },
     [drawStroke, drawArrow, drawText]
@@ -340,6 +344,7 @@ export default function Graffiti({
       if (tool === 'arrow' && arrowStart && previewArrow) {
         const drawDuration = Date.now() - arrowStartRef.current;
         const arrow: Arrow = {
+          type: 'arrow',
           id: generateId(),
           start: arrowStart,
           end: previewArrow.end,
@@ -359,6 +364,7 @@ export default function Graffiti({
       if (currentStroke && currentStroke.length > 1) {
         const drawDuration = Date.now() - strokeStartRef.current;
         const stroke: Stroke = {
+          type: 'stroke',
           id: generateId(),
           points: currentStroke,
           color,
@@ -384,6 +390,7 @@ export default function Graffiti({
     }
     const drawDuration = Date.now() - textStartRef.current;
     const textAnno: TextAnnotation = {
+      type: 'text',
       id: generateId(),
       position: textInput,
       text: textValue.trim(),
