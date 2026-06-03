@@ -11,8 +11,8 @@ function App() {
   return (
     <div className="app">
       <header>
-        <h1>🎨 Graffiti</h1>
-        <p>Draw on video. Annotate moments. Make it stick.</p>
+        <h1>Graffiti</h1>
+        <p>Draw on video. Annotate moments.</p>
       </header>
 
       <main>
