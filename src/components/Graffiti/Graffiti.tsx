@@ -7,12 +7,21 @@ import type {
   Stroke,
   TextAnnotation,
   Tool,
+  ToolDescriptor,
 } from './types';
 import './Graffiti.css';
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
+
+const TOOLS: ToolDescriptor[] = [
+  { id: 'pen',    label: 'pen',    icon: '✏️' },
+  { id: 'marker', label: 'marker', icon: '🖍️' },
+  { id: 'arrow',  label: 'arrow',  icon: '➡️' },
+  { id: 'text',   label: 'text',   icon: 'T' },
+  { id: 'select', label: 'select', icon: '👆' },
+];
 
 export default function Graffiti({
   src,
@@ -574,18 +583,14 @@ export default function Graffiti({
     <div className={`graffiti ${className}`} ref={containerRef} style={{ width, height }}>
       <div className="graffiti-toolbar">
         <div className="graffiti-tools">
-          {(['pen', 'marker', 'arrow', 'text', 'select'] as Tool[]).map((t) => (
+          {TOOLS.map((t) => (
             <button
-              key={t}
-              className={tool === t ? 'active' : ''}
-              onClick={() => setTool(t)}
-              title={t}
+              key={t.id}
+              className={tool === t.id ? 'active' : ''}
+              onClick={() => setTool(t.id)}
+              title={t.label}
             >
-              {t === 'pen' && '✏️'}
-              {t === 'marker' && '🖍️'}
-              {t === 'arrow' && '➡️'}
-              {t === 'text' && 'T'}
-              {t === 'select' && '👆'}
+              {t.icon}
             </button>
           ))}
         </div>

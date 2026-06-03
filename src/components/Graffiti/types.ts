@@ -40,6 +40,12 @@ export interface TextAnnotation {
 
 export type Annotation = Stroke | Arrow | TextAnnotation;
 
+export interface ToolDescriptor {
+  id: Tool;
+  label: string;
+  icon: string;
+}
+
 export interface GraffitiProps {
   src: string;
   width?: number;
