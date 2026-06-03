@@ -1,5 +1,8 @@
 {
-  "name": "graffiti",
+  "name": "@gstranger/graffiti",
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.1.0",
   "type": "module",
   "description": "Telestrator-style React component for drawing on HTML5 video.",
