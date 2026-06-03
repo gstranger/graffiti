@@ -217,6 +217,10 @@ export default function Graffiti({
           drawText(ctx, text, anno.position, anno.color, anno.fontSize, opacity);
           return;
         }
+        default: {
+          const _exhaustive: never = anno;
+          return _exhaustive;
+        }
       }
     },
     [drawStroke, drawArrow, drawText]
