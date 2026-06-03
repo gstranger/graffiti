@@ -2,6 +2,7 @@
   "name": "graffiti-monorepo",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
   "workspaces": ["packages/*", "examples/*"],
   "scripts": {
     "dev": "npm-run-all -p dev:lib dev:demo",
