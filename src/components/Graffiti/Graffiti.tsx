@@ -182,7 +182,8 @@ export default function Graffiti({
         drawStroke(ctx, points, stroke.color, stroke.width, stroke.tool);
       } else if ('start' in anno) {
         const arrow = anno as Arrow;
-        let { start, end } = arrow;
+        const { start } = arrow;
+        let { end } = arrow;
         if (animating) {
           const t = Math.max(0, Math.min(1, elapsed / anno.duration));
           end = {
@@ -208,28 +209,25 @@ export default function Graffiti({
     [drawStroke, drawArrow, drawText]
   );
 
-  const tickReplay = useCallback(() => {
-    if (!replayAnno) return;
-    const elapsed = Date.now() - replayStartRef.current;
-    if (elapsed >= replayAnno.duration) {
-      setReplayElapsed(replayAnno.duration);
-      setReplayAnno(null);
-      videoRef.current?.play();
-      return;
-    }
-    setReplayElapsed(elapsed);
-    replayRafRef.current = requestAnimationFrame(tickReplay);
-  }, [replayAnno]);
-
   useEffect(() => {
-    if (replayAnno) {
-      replayStartRef.current = Date.now();
-      replayRafRef.current = requestAnimationFrame(tickReplay);
-    }
+    if (!replayAnno) return;
+    replayStartRef.current = Date.now();
+    const tick = () => {
+      const elapsed = Date.now() - replayStartRef.current;
+      if (elapsed >= replayAnno.duration) {
+        setReplayElapsed(replayAnno.duration);
+        setReplayAnno(null);
+        videoRef.current?.play();
+        return;
+      }
+      setReplayElapsed(elapsed);
+      replayRafRef.current = requestAnimationFrame(tick);
+    };
+    replayRafRef.current = requestAnimationFrame(tick);
     return () => {
       if (replayRafRef.current) cancelAnimationFrame(replayRafRef.current);
     };
-  }, [replayAnno, tickReplay]);
+  }, [replayAnno]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
