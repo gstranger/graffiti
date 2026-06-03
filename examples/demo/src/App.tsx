@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Graffiti, type Annotation } from '@gstranger/graffiti';
-import '@gstranger/graffiti/style.css';
+import { Graffiti, type Annotation } from '@jodiak/graffiti';
+import '@jodiak/graffiti/style.css';
 import './App.css';
 
 const SAMPLE_VIDEO = 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4';
