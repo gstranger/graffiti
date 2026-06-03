@@ -79,8 +79,8 @@ export default function Graffiti({
       const canvas = canvasRef.current;
       if (!canvas) return { x: 0, y: 0 };
       const rect = canvas.getBoundingClientRect();
-      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+      const clientX = 'touches' in e ? e.touches[0]!.clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0]!.clientY : e.clientY;
       return {
         x: (clientX - rect.left) * (canvas.width / rect.width),
         y: (clientY - rect.top) * (canvas.height / rect.height),
@@ -99,9 +99,9 @@ export default function Graffiti({
     ) => {
       if (points.length < 2) return;
       ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
+      ctx.moveTo(points[0]!.x, points[0]!.y);
       for (let i = 1; i < points.length; i++) {
-        ctx.lineTo(points[i].x, points[i].y);
+        ctx.lineTo(points[i]!.x, points[i]!.y);
       }
       ctx.strokeStyle = color;
       ctx.lineWidth = width;
@@ -486,7 +486,7 @@ export default function Graffiti({
       wasPlayingBeforeScrubRef.current = !video.paused;
       if (!video.paused) video.pause();
       setIsScrubbing(true);
-      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientX = 'touches' in e ? e.touches[0]!.clientX : e.clientX;
       const t = getTrackTime(clientX);
       video.currentTime = t;
       setCurrentTime(t);
@@ -500,7 +500,7 @@ export default function Graffiti({
     (e: React.MouseEvent | React.TouchEvent) => {
       if (!isScrubbing) return;
       e.preventDefault();
-      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientX = 'touches' in e ? e.touches[0]!.clientX : e.clientX;
       const t = getTrackTime(clientX);
       if (videoRef.current) videoRef.current.currentTime = t;
       setCurrentTime(t);

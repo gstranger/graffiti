@@ -1,30 +1,25 @@
 {
-  "name": "graffiti",
+  "name": "graffiti-monorepo",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+  "workspaces": ["packages/*", "examples/*"],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "dev": "npm-run-all -p dev:lib dev:demo",
+    "dev:lib": "npm run dev -w packages/graffiti",
+    "dev:demo": "npm run dev -w examples/demo",
+    "build": "npm run build -w packages/graffiti && npm run build -w examples/demo",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "tsc -b"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.12.3",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "npm-run-all2": "^7",
     "typescript": "~6.0.2",
-    "typescript-eslint": "^8.59.2",
-    "vite": "^8.0.12"
+    "typescript-eslint": "^8.59.2"
   }
 }
